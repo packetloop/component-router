@@ -1,187 +1,195 @@
 /* eslint-disable react/forbid-prop-types */
 
-import React from 'react';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import PropTypes from 'prop-types';
-import {actions, href, isActive, locationHash, locationHistory} from '../../src';
-import {createStore} from './store';
+import {actions, href, isActive} from '../../src';
+import {ReduxContext} from '../context';
 
 
-const store = createStore();
-
-
-if (process.env.HISTORY === 'HASH') {
-  // When publishing to GitHub Pages we cannon use HTML5 history navigation
-  locationHash({store, namespace: 'componentRouter'});
-} else {
-  locationHistory({store, namespace: 'componentRouter'});
-}
-
-
-const navigateTo = params => event => {
-  event.preventDefault();
-  store.dispatch(actions.navigateTo(params));
+const useNavigateTo = params => {
+  const store = useContext(ReduxContext);
+  return useCallback(event => {
+    event.preventDefault();
+    store.dispatch(actions.navigateTo(params));
+  }, []);
 };
 
 
-const GlobalLinks = ({routingState}) => (
-  <ul>
-    <li>
-      <a
-        className="tab"
-        data-active={isActive(routingState, {pathname: '/'})}
-        href={href(routingState, {pathname: '/'})}
-        onClick={navigateTo({pathname: '/'})}>Home
-      </a>
-    </li>
-    <li>
-      <a
-        className="tab"
-        data-active={isActive(routingState, {pathname: '/foo'})}
-        href={href(routingState, {pathname: '/foo'})}
-        onClick={navigateTo({pathname: '/foo'})}>/foo
-      </a>
-    </li>
-    <li>
-      <a
-        className="tab"
-        data-active={isActive(routingState, {pathname: '/bar'})}
-        href={href(routingState, {pathname: '/bar'})}
-        onClick={navigateTo({pathname: '/bar'})}>/bar
-      </a>
-    </li>
-    <li>
-      <a
-        className="tab"
-        data-active={isActive(routingState, {pathname: '/cleanHistory'})}
-        href={href(routingState, {pathname: '/cleanHistory'})}
-        onClick={navigateTo({pathname: '/cleanHistory'})}>/cleanHistory
-      </a>
-    </li>
-    <li>
-      <a
-        className="tab"
-        data-active={isActive(routingState, {pathname: '/404'})}
-        href={href(routingState, {pathname: '/404'})}
-        onClick={navigateTo({pathname: '/404'})}>/404
-      </a>
-    </li>
-    <li>
-      <a
-        className="tab"
-        data-active={isActive(routingState, {pathname: '/bar/x/z'})}
-        href={href(routingState, {pathname: '/bar/x/z'})}
-        onClick={navigateTo({pathname: '/bar/x/z'})}>/bar/x/z
-      </a>
-    </li>
-    <li>
-      <a
-        className="tab"
-        data-active={isActive(routingState, {pathname: '/foo/x/z'})}
-        href={href(routingState, {pathname: '/foo/x/z'})}
-        onClick={navigateTo({pathname: '/foo/x/z'})}>/foo/x/z
-      </a>
-    </li>
-    <li>
-      <a
-        className="tab"
-        data-active={isActive(routingState, {pathname: '/foo/x/z/more'})}
-        href={href(routingState, {pathname: '/foo/x/z/more'})}
-        onClick={navigateTo({pathname: '/foo/x/z/more'})}>/foo/x/z/more
-      </a>
-    </li>
-    <li>
-      <a
-        className="tab"
-        data-active={isActive(routingState, {pathname: '/foo/'})}
-        href={href(routingState, {pathname: '/foo/'})}
-        onClick={navigateTo({pathname: '/foo/'})}>/foo/
-      </a>
-    </li>
-  </ul>
-);
+const GlobalLinks = ({routingState}) => {
+  const navigateToHome = useNavigateTo({pathname: '/'});
+  const navigateToFoo = useNavigateTo({pathname: '/foo'});
+  const navigateToBar = useNavigateTo({pathname: '/bar'});
+  const navigateToCleanHistory = useNavigateTo({pathname: '/cleanHistory'});
+  const navigateTo404 = useNavigateTo({pathname: '/404'});
+
+
+  const navigateToBarXZ = useNavigateTo({pathname: '/bar/x/z'});
+  const navigateToFooXZ = useNavigateTo({pathname: '/foo/x/z'});
+  const navigateToFooXZMore = useNavigateTo({pathname: '/foo/x/z/more'});
+  const navigateToFooSlash = useNavigateTo({pathname: '/foo/x/z/more'});
+
+
+  return (
+    <ul>
+      <li>
+        <a
+          className="tab"
+          data-active={isActive(routingState, {pathname: '/'})}
+          href={href(routingState, {pathname: '/'})}
+          onClick={navigateToHome}>Home
+        </a>
+      </li>
+      <li>
+        <a
+          className="tab"
+          data-active={isActive(routingState, {pathname: '/foo'})}
+          href={href(routingState, {pathname: '/foo'})}
+          onClick={navigateToFoo}>/foo
+        </a>
+      </li>
+      <li>
+        <a
+          className="tab"
+          data-active={isActive(routingState, {pathname: '/bar'})}
+          href={href(routingState, {pathname: '/bar'})}
+          onClick={navigateToBar}>/bar
+        </a>
+      </li>
+      <li>
+        <a
+          className="tab"
+          data-active={isActive(routingState, {pathname: '/cleanHistory'})}
+          href={href(routingState, {pathname: '/cleanHistory'})}
+          onClick={navigateToCleanHistory}>/cleanHistory
+        </a>
+      </li>
+      <li>
+        <a
+          className="tab"
+          data-active={isActive(routingState, {pathname: '/404'})}
+          href={href(routingState, {pathname: '/404'})}
+          onClick={navigateTo404}>/404
+        </a>
+      </li>
+      <li>
+        <a
+          className="tab"
+          data-active={isActive(routingState, {pathname: '/bar/x/z'})}
+          href={href(routingState, {pathname: '/bar/x/z'})}
+          onClick={navigateToBarXZ}>/bar/x/z
+        </a>
+      </li>
+      <li>
+        <a
+          className="tab"
+          data-active={isActive(routingState, {pathname: '/foo/x/z'})}
+          href={href(routingState, {pathname: '/foo/x/z'})}
+          onClick={navigateToFooXZ}>/foo/x/z
+        </a>
+      </li>
+      <li>
+        <a
+          className="tab"
+          data-active={isActive(routingState, {pathname: '/foo/x/z/more'})}
+          href={href(routingState, {pathname: '/foo/x/z/more'})}
+          onClick={navigateToFooXZMore}>/foo/x/z/more
+        </a>
+      </li>
+      <li>
+        <a
+          className="tab"
+          data-active={isActive(routingState, {pathname: '/foo/'})}
+          href={href(routingState, {pathname: '/foo/'})}
+          onClick={navigateToFooSlash}>/foo/
+        </a>
+      </li>
+    </ul>
+  );
+};
 GlobalLinks.propTypes = {
   routingState: PropTypes.object.isRequired
 };
 
 
-class ComponentLinks extends React.Component {
-  static propTypes = {
-    routingState: PropTypes.object.isRequired
-  };
+const ComponentLinks = ({routingState}) => {
+  const store = useContext(ReduxContext);
 
 
-  componentDidMount() {
+  const navigateTo = useCallback(params => event => {
+    event.preventDefault();
+    store.dispatch(actions.navigateTo(params));
+  }, []);
+
+
+  useEffect(() => {
     store.dispatch(actions.addDefaultParam('component', 'baz'));
-  }
+    return () => {
+      store.dispatch(actions.removeParam('component'));
+    };
+  }, []);
 
 
-  componentWillUnmount() {
-    store.dispatch(actions.removeParam('component'));
-  }
+  return (
+    <span>
+      <a
+        className="link"
+        data-active={isActive(routingState, {query: {component: 'bla'}})}
+        href={href(routingState, {query: {component: 'bla'}})}
+        onClick={navigateTo({query: {component: 'bla'}})}>component: bla
+      </a>
+      <a
+        className="link"
+        data-active={isActive(routingState, {query: {component: 'baz'}})}
+        href={href(routingState, {query: {component: 'baz'}})}
+        onClick={navigateTo({query: {component: 'baz'}})}>component: baz
+      </a>
+    </span>
+  );
+};
+ComponentLinks.propTypes = {
+  routingState: PropTypes.object.isRequired
+};
+
+const SortedComponentLinks = ({routingState}) => {
+  const store = useContext(ReduxContext);
 
 
-  render() {
-    const {routingState} = this.props;
-
-    return (
-      <span>
-        <a
-          className="link"
-          data-active={isActive(routingState, {query: {component: 'bla'}})}
-          href={href(routingState, {query: {component: 'bla'}})}
-          onClick={navigateTo({query: {component: 'bla'}})}>component: bla
-        </a>
-        <a
-          className="link"
-          data-active={isActive(routingState, {query: {component: 'baz'}})}
-          href={href(routingState, {query: {component: 'baz'}})}
-          onClick={navigateTo({query: {component: 'baz'}})}>component: baz
-        </a>
-      </span>
-    );
-  }
-}
+  const navigateTo = useCallback(params => event => {
+    event.preventDefault();
+    store.dispatch(actions.navigateTo(params));
+  }, []);
 
 
-class SortedComponentLinks extends React.Component {
-  static propTypes = {
-    routingState: PropTypes.object.isRequired
-  };
-
-
-  componentDidMount() {
+  useEffect(() => {
     store.dispatch(actions.addDefaultParam('offRecord', 'bla'));
     store.dispatch(actions.addOffRecordParam('offRecord'));
-  }
+    return () => {
+      store.dispatch(actions.removeParam('offRecord'));
+    };
+  }, []);
 
 
-  componentWillUnmount() {
-    store.dispatch(actions.removeParam('offRecord'));
-  }
-
-
-  render() {
-    const {routingState} = this.props;
-
-    return (
+  return (
+    <div>
+      <h3>Changes are going to replace browser history</h3>
       <div>
-        <h3>Changes are going to replace browser history</h3>
-        <div>
-          {['bla', 'baz', 'abc', 'zyx'].map(item => (
-            <a
-              className="link"
-              data-active={isActive(routingState, {query: {offRecord: item}})}
-              href={href(routingState, {query: {offRecord: item}})}
-              key={item}
-              onClick={navigateTo({query: {offRecord: item}})}>
-              off-record: {item}
-            </a>
-          ))}
-        </div>
+        {['bla', 'baz', 'abc', 'zyx'].map(item => (
+          <a
+            className="link"
+            data-active={isActive(routingState, {query: {offRecord: item}})}
+            href={href(routingState, {query: {offRecord: item}})}
+            key={item}
+            onClick={navigateTo({query: {offRecord: item}})}>
+            off-record: {item}
+          </a>
+        ))}
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+SortedComponentLinks.propTypes = {
+  routingState: PropTypes.object.isRequired
+};
 
 
 const Header = props => (
@@ -247,45 +255,39 @@ const routes = {
 };
 
 
-// Add routes
-Object.keys(routes).forEach(route => store.dispatch(actions.addRoute(route)));
+export const App = () => {
+  const store = useContext(ReduxContext);
+  const [routingState, setRoutingState] = useState(store.getState().componentRouter);
 
 
-class App extends React.Component {
-  state = {
-    routingState: store.getState().componentRouter
-  };
-
-
-  componentDidMount() {
-    this.unsubscribe = store.subscribe(
-      () => this.setState({routingState: store.getState().componentRouter})
+  useEffect(() => {
+    const unsubscribe = store.subscribe(
+      () => setRoutingState(store.getState().componentRouter)
     );
-  }
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
 
-  componentWillUnmount() {
-    this.unsubscribe();
-  }
+  useEffect(() => {
+    // Add routes
+    Object.keys(routes).forEach(route => store.dispatch(actions.addRoute(route)));
+  }, []);
 
 
-  render() {
-    const {routingState} = this.state;
-    const CurrentComponent = routes[routingState.currentRoute.route] || NotFound;
-
-    return (
-      <div className="app">
-        <h1>component-router</h1>
-        <Header routingState={routingState} />
-        <CurrentComponent routingState={routingState} />
-        <section className="content">
-          Routing state:
-          <pre>{JSON.stringify(routingState, null, 2)}</pre>
-        </section>
-      </div>
-    );
-  }
-}
+  const CurrentComponent = routes[routingState.currentRoute.route] || NotFound;
 
 
-export default App;
+  return (
+    <div className="app">
+      <h1>component-router</h1>
+      <Header routingState={routingState} />
+      <CurrentComponent routingState={routingState} />
+      <section className="content">
+        Routing state:
+        <pre>{JSON.stringify(routingState, null, 2)}</pre>
+      </section>
+    </div>
+  );
+};
