@@ -1,13 +1,17 @@
 import test from 'tape';
-import React, {createElement as e} from 'react';
+
+import React from 'react';
 import {render, unmountComponentAtNode} from 'react-dom';
 import {act} from 'react-dom/test-utils';
 
+
 import {combineReducers, createStore as createReduxStore} from 'redux';
-import {componentRouter, locationHash} from '../src';
+import {componentRouter, locationHistory} from '../src';
 import {App} from '../example/App';
 import {ReduxContext} from '../example/context';
 
+import '../example/reset.css';
+import '../example/app.css';
 
 const createStore = initialState => {
   const rootReducer = combineReducers({
@@ -31,16 +35,23 @@ const after = () => {
 };
 
 
-test('location', t => {
+test.createStream({objectMode: true})
+  .on('data', detail => document.body.dispatchEvent(new CustomEvent('tapeLog', {detail})));
+
+test.onFinish(() => document.body.dispatchEvent(new CustomEvent('tapeFinish')));
+
+
+test('all things', t => {
   const store = createStore();
-  // locationHash({store, namespace: 'componentRouter'});
+  locationHistory({store, namespace: 'componentRouter'});
 
   before();
 
   act(() => {
     render((
-      e(ReduxContext.Provider, {value: store},
-        e(App))
+      <ReduxContext.Provider value={store}>
+        <App />
+      </ReduxContext.Provider>
     ), app);
   });
 
@@ -49,11 +60,11 @@ test('location', t => {
   t.equal(app.querySelector('h1').innerHTML, 'component-router');
 
   t.ok(app.querySelector('a.tab[href^="/foo"]'));
-  t.ok(app.querySelector('a.tab[href^="/bar"]'));
+  t.ok(app.querySelector('a.tab[href^="/bar1"]'));
 
   act(() => {
     app.querySelector('a.tab[href^="/foo"]')
-      .dispatchEvent(new MouseEvent('click', {bubbles: true}));
+      .dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
   });
 
 

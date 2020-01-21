@@ -50,7 +50,7 @@ exports.loaders = {
   babel: {
     test: /\.js$/,
     loader: require.resolve('babel-loader'),
-    include: [pathTo('src'), pathTo('example')],
+    include: [pathTo('src'), pathTo('example'), pathTo('e2e')],
     options: {
       babelrc: false,
       presets: [

@@ -1,64 +1,89 @@
 const puppeteer = require('puppeteer-core');
-const test = require('tape');
 
 
 const Webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 const webpackConfig = require('../webpack/e2e.config');
 
-test('all things', async t => {
 
+const isHeaded = process.argv.includes('--headed');
+const {
+  NODE_HOST = '127.0.0.1',
+  NODE_PORT = '10000'
+} = process.env;
+
+
+const run = async () => {
   const compiler = Webpack(webpackConfig);
   const server = new WebpackDevServer(compiler, webpackConfig.devServer);
 
-  await new Promise((resolve, reject) => server.listen(10000, '127.0.0.1', error => {
+  await new Promise((resolve, reject) => server.listen(NODE_PORT, NODE_HOST, error => {
     if (error) {
       reject(error);
       return;
     }
-    console.log('Starting server on http://localhost:10000');
+    console.log(`Starting server on http://${NODE_HOST}:${NODE_PORT}`);
     resolve();
   }));
 
   const browser = await puppeteer.launch({
     executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-//    headless: false,
-//    devtools: true
+    headless: !isHeaded,
+    devtools: true
   });
-  const page = await browser.newPage();
-  await page.goto('http://localhost:10000');
+
+  const [page = await browser.newPage()] = await browser.pages();
+
+  page.on('console', msg => {
+    console.log(msg.type(), msg.text());
+  });
 
 
-  const h1 = await page.$('#app .app > h1');
-  t.ok(h1);
+  let onFinished;
+  const testsFinished = new Promise(resolve => {
+    onFinished = resolve;
+  });
 
-  t.equal(
-    await page.evaluate(e => e.innerHTML, h1),
-    'component-router'
+
+  const listeners = {
+    'tapeLog': e => console.log(`e.detail`, e.detail),
+    'tapeFinish': () => {
+      console.log('FINISHED');
+      onFinished();
+    }
+  };
+
+
+
+  await page.goto(`http://${NODE_HOST}:${NODE_PORT}`);
+  await page.evaluate(
+    ls => {
+      Object.keys(ls).forEach(
+        event =>
+          console.log(`event`, event, ls[event]) ||
+
+        document.body.addEventListener(event, ls[event], false)
+      );
+    },
+    listeners
   );
 
-  t.ok(await page.$('a.tab[href^="/foo"]'));
-  t.ok(await page.$('a.tab[href^="/bar"]'));
+//  await testsFinished;
 
+//  await page.evaluate(
+//    () => new Promise(resolve => {
+//      if (document.body.classList.contains('tapeFinished')) {
+//        resolve();
+//        return;
+//      }
+//      document.body.addEventListener('onFinish', resolve, false);
+//    })
+//  );
 
-  t.equal(
-    await page.evaluate(e => e.innerHtml, await page.$('#app .content > h1')),
-    'Home'
-  );
+  if (!isHeaded) {
+    await new Promise(resolve => server.close(resolve));
+    await browser.close();
+  }
+};
 
-
-  page.click('a.tab[href^="/foo"]');
-
-
-  t.equal(
-    await page.evaluate(e => e.innerHtml, await page.$('#app .content > h1')),
-    'Foo'
-  );
-
-
-  await new Promise(resolve => server.close(resolve));
-  await browser.close();
-
-
-  t.end();
-});
+run();

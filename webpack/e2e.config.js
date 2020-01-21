@@ -1,4 +1,3 @@
-
 const {
   mode,
   pathTo,
@@ -14,7 +13,7 @@ module.exports = {
   devtool: 'eval',
 
   entry: [
-    pathTo('example', 'index.js')
+    pathTo('e2e', 'index.js')
   ],
   output: {
     filename: 'bundle.js',
@@ -40,5 +39,13 @@ module.exports = {
       chunkModules: false,
       colors: true
     }
+  },
+  node: {
+    dgram: 'empty',
+    fs: 'empty',
+    net: 'empty',
+    tls: 'empty',
+    dns: 'empty',
+    child_process: 'empty'
   }
 };
